@@ -629,11 +629,17 @@ def main(argv: Optional[List[str]] = None) -> int:
                 exit_code = 1
 
     say("\nManual addons, from CurseForge:")
+    pending = {job.name for job in imports}
     for addon in MANUAL_ADDONS:
         entry = state.get(addon.name)
-        missing = addon in waiting
-        status = "not installed yet" if missing else (
-            f"installed {entry['installed_at'][:10]}" if entry else "installed outside this script")
+        if entry and not (args.check and addon.name in pending):
+            status = f"installed {entry['installed_at'][:10]}"
+        elif addon.name in pending:
+            status = "zip ready in Downloads"
+        elif addon in waiting:
+            status = "not installed yet"
+        else:
+            status = "installed outside this script"
         say(f"  {addon.name:<12} {status}")
     if waiting:
         say("\nDownload the Forever file for each of these, then run this script again:")
